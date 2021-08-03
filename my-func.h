@@ -8,8 +8,10 @@
 #include <sys/socket.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <libnet.h>
 #include "ethhdr.h"
 #include "arphdr.h"
+#include "iphdr.h"
 
 #pragma pack(push, 1)
 struct EthArpPacket final {
@@ -33,6 +35,14 @@ typedef struct Target {
     Ip ip;
 } Target;
 
+//typedef struct Eth_hdr {
+
+//} Eth_hdr;
+
+//typedef struct Ip_hdr {
+
+//} Ip_hdr;
+
 Attacker attacker;
 Sender sender;
 Target target;
@@ -40,4 +50,6 @@ Target target;
 void usage();
 void get_myinfo(char* interface);
 Mac get_smac(pcap_t* handle);
-void attack(pcap_t* handle);
+void infect_sender(pcap_t* handle);
+u_char* get_spoofed_packet(pcap_t* handle);
+void relay(pcap_t* handle, u_char* packet);

@@ -16,5 +16,6 @@ HEADERS += \
 	arphdr.h \
 	ethhdr.h \
 	ip.h \
+	iphdr.h \
 	mac.h \
 	my-func.h
