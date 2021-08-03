@@ -23,18 +23,15 @@ int main(int argc, char* argv[]) {
     int cnt = 0;
     for (int i=2;i<argc;i+=2){
         printf("\n======Pair %d======\n", ++cnt);
-        // get sender MAC
         sender.ip = Ip(argv[i]);
+        target.ip = Ip(argv[i+1]);
+
+        // get sender MAC
         sender.mac = get_smac(handle);
         printf("Sender MAC: %s\n", std::string(sender.mac).c_str());
 
         // spoof
-        target.ip = Ip(argv[i+1]);
-        infect_sender(handle);
-        printf("Sender infected\n");
-
-        u_char* packet = get_spoofed_packet(handle);
-        relay(handle, packet);
+        arp_spoof(handle);
     }
     pcap_close(handle);
     return 0;

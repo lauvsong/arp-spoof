@@ -51,5 +51,7 @@ void usage();
 void get_myinfo(char* interface);
 Mac get_smac(pcap_t* handle);
 void infect_sender(pcap_t* handle);
-u_char* get_spoofed_packet(pcap_t* handle);
 void relay(pcap_t* handle, u_char* packet);
+bool is_spoofed(const u_char* packet);
+bool is_recover(const u_char* packet);
+void arp_spoof(pcap_t* handle);
