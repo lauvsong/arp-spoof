@@ -18,8 +18,26 @@ struct EthArpPacket final {
 };
 #pragma pack(pop)
 
+typedef struct Attacker {
+    Mac mac;
+    Ip ip;
+} Attacker;
+
+typedef struct Sender {
+    Mac mac;
+    Ip ip;
+} Sender;
+
+typedef struct Target {
+    Mac mac;
+    Ip ip;
+} Target;
+
+Attacker attacker;
+Sender sender;
+Target target;
+
 void usage();
-void get_myinfo(char* interface, Mac& mymac, Ip& myip);
-void get_myinfo(char* interface, Mac& mac, Ip& ip);
-void get_smac(pcap_t* handle, Mac& smac, Ip& sip, Ip& myip, Mac& mymac);
-void attack(pcap_t* handle, Mac& mymac, Ip& tip, Mac& smac, Ip& sip);
+void get_myinfo(char* interface);
+Mac get_smac(pcap_t* handle);
+void attack(pcap_t* handle);

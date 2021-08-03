@@ -15,25 +15,23 @@ int main(int argc, char* argv[]) {
     }
 
     // get attacker info
-    Mac mymac;
-    Ip myip;
+    get_myinfo(dev);
 
-    get_myinfo(dev, mymac, myip);
-    printf("Attacker MAC: %s\n", std::string(mymac).c_str());
-    printf("Attacker IP: %s\n", std::string(myip).c_str());
+    printf("Attacker MAC: %s\n", std::string(attacker.mac).c_str());
+    printf("Attacker IP: %s\n", std::string(attacker.ip).c_str());
 
     int cnt = 0;
     for (int i=2;i<argc;i+=2){
         printf("\n======Pair %d======\n", ++cnt);
         // get sender MAC
-        Ip sip(argv[i]);
-        Mac smac;
-        get_smac(handle, smac, sip, myip, mymac);
+        sender.ip = Ip(argv[i]);
+        sender.mac = get_smac(handle);
+        printf("Sender MAC: %s\n", std::string(sender.mac).c_str());
 
         // spoof
-        Ip tip(argv[i+1]);
-        Mac tmac;
-        attack(handle, mymac, tip, smac, sip);
+        target.ip = Ip(argv[i+1]);
+        attack(handle);
+        printf("Attack Success\n");
     }
     pcap_close(handle);
     return 0;
