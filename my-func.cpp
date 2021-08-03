@@ -152,9 +152,11 @@ void arp_spoof(pcap_t* handle){
         }
         if (is_recover(packet)){
             infect_sender(handle);
+            printf("Reinfect success\n");
             continue;
         } else if (is_spoofed(packet)) {
             relay(handle, packet);
+            printf("Relayed\n");
         }
     }
 }
