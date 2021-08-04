@@ -25,33 +25,20 @@ typedef struct Attacker {
     Ip ip;
 } Attacker;
 
-typedef struct Sender {
-    Mac mac;
-    Ip ip;
-} Sender;
-
-typedef struct Target {
-    Mac mac;
-    Ip ip;
-} Target;
-
-//typedef struct Eth_hdr {
-
-//} Eth_hdr;
-
-//typedef struct Ip_hdr {
-
-//} Ip_hdr;
+typedef struct Pair {
+    Mac smac;
+    Ip sip;
+    Mac tmac;
+    Ip tip;
+} Pair;
 
 Attacker attacker;
-Sender sender;
-Target target;
 
 void usage();
 void get_myinfo(char* interface);
-Mac get_smac(pcap_t* handle);
-void infect_sender(pcap_t* handle);
-void relay(pcap_t* handle, u_char* packet);
-bool is_spoofed(const u_char* packet);
-bool is_recover(const u_char* packet);
-void arp_spoof(pcap_t* handle);
+Mac get_smac(pcap_t* handle, Pair& pair);
+void infect_sender(pcap_t* handle, Pair& pair);
+void relay(pcap_t* handle, u_char* packet, Pair& pair);
+bool is_spoofed(const u_char* packet, Pair& pair);
+bool is_recover(const u_char* packet, Pair& pair);
+void arp_spoof(pcap_t* handle, Pair& pair);
