@@ -6,6 +6,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+    setbuf(stdout, NULL);
     char* dev = argv[1];
     char errbuf[PCAP_ERRBUF_SIZE];
     pcap_t* handle = pcap_open_live(dev, BUFSIZ, 1, 1, errbuf);
@@ -16,8 +17,8 @@ int main(int argc, char* argv[]) {
 
     // get attacker info
     get_myinfo(dev);
-    printf("Attacker MAC: %s\n", std::string(attacker.mac).c_str());
     printf("Attacker IP: %s\n", std::string(attacker.ip).c_str());
+    printf("Attacker MAC: %s\n", std::string(attacker.mac).c_str());
 
     // threads
     int pair_cnt = (argc-2)/2;
@@ -30,6 +31,7 @@ int main(int argc, char* argv[]) {
         pairs[idx].sip =Ip(argv[i]);
         pairs[idx].tip= Ip(argv[i+1]);
 
+        task(handle, pairs[idx]);
         tasks[idx] = std::thread(task, handle, std::ref(pairs[idx]));
         ++idx;
     }

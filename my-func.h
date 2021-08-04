@@ -9,7 +9,6 @@
 #include <sys/socket.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <libnet.h>
 #include "ethhdr.h"
 #include "arphdr.h"
 #include "iphdr.h"
