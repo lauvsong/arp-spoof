@@ -35,10 +35,14 @@ int main(int argc, char* argv[]) {
         pair.smac = get_smac(handle, pair);
         printf("Sender MAC: %s\n", std::string(pair.smac).c_str());
 
-        // spoof
+        // infect
+        infect(handle, pair);
+        printf("Sender infected\n");
+
+        // reinfect & relay
         std::thread task = std::thread(arp_spoof, handle);
         tasks.push_back(task);
-        task.detach();
+        task.join();
     }
     pcap_close(handle);
     return 0;

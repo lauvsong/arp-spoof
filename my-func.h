@@ -20,12 +20,12 @@ struct EthArpPacket final {
 };
 #pragma pack(pop)
 
-typedef struct Attacker {
+typedef struct Attacker final {
     Mac mac;
     Ip ip;
 } Attacker;
 
-typedef struct Pair {
+typedef struct Pair final {
     Mac smac;
     Ip sip;
     Mac tmac;
@@ -37,7 +37,7 @@ Attacker attacker;
 void usage();
 void get_myinfo(char* interface);
 Mac get_smac(pcap_t* handle, Pair& pair);
-void infect_sender(pcap_t* handle, Pair& pair);
+void infect(pcap_t* handle, Pair& pair);
 void relay(pcap_t* handle, u_char* packet, Pair& pair);
 bool is_spoofed(const u_char* packet, Pair& pair);
 bool is_recover(const u_char* packet, Pair& pair);
