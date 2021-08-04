@@ -1,5 +1,7 @@
 #include "my-func.h"
 
+Attacker attacker;
+
 void usage() {
     printf("syntax : arp-spoof <interface> <sender ip 1> <target ip 1> [<sender ip 2> <target ip 2>...]\n");
     printf("sample : arp-spoof wlan0 192.168.10.2 192.168.10.1 192.168.10.1 192.168.10.2\n");
@@ -138,6 +140,9 @@ void relay(pcap_t* handle, const u_char* packet, Pair& pair){
 }
 
 void arp_spoof(pcap_t* handle, Pair& pair){
+    infect(handle, pair);
+    printf("Sender infected\n");
+
     while(true){
         struct pcap_pkthdr* header;
         const u_char* packet;
@@ -156,4 +161,11 @@ void arp_spoof(pcap_t* handle, Pair& pair){
             printf("Relayed\n");
         }
     }
+}
+
+void task(pcap_t* handle, Pair& pair){
+    pair.smac = get_smac(handle, pair);
+    printf("Sender MAC: %s\n", std::string(pair.smac).c_str());
+
+    arp_spoof(handle, pair);
 }

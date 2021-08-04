@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdio>
+#include <thread>
 #include <pcap.h>
 #include <net/if.h>
 #include <net/if_arp.h>
@@ -32,7 +33,7 @@ typedef struct Pair final {
     Ip tip;
 } Pair;
 
-Attacker attacker;
+extern Attacker attacker;
 
 void usage();
 void get_myinfo(char* interface);
@@ -42,3 +43,4 @@ void relay(pcap_t* handle, u_char* packet, Pair& pair);
 bool is_spoofed(const u_char* packet, Pair& pair);
 bool is_recover(const u_char* packet, Pair& pair);
 void arp_spoof(pcap_t* handle, Pair& pair);
+void task(pcap_t* handle, Pair& pair);

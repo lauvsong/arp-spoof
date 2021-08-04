@@ -1,2 +1,4 @@
 *.user
 *unittest.pro
+*.o
+*.stash
