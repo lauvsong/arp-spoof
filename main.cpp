@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     }
 
     // get attacker info
-    get_myinfo(dev);
+    get_attacker_info(dev);
     printf("Attacker IP: %s\n", std::string(attacker.ip).c_str());
     printf("Attacker MAC: %s\n", std::string(attacker.mac).c_str());
 
@@ -31,13 +31,12 @@ int main(int argc, char* argv[]) {
         pairs[idx].sip =Ip(argv[i]);
         pairs[idx].tip= Ip(argv[i+1]);
 
-        task(handle, pairs[idx]);
         tasks[idx] = std::thread(task, handle, std::ref(pairs[idx]));
         ++idx;
     }
 
-    for (std::thread& task : tasks){
-        task.join();
+    for (int i=0;i<idx;i++){
+        tasks[i].join();
     }
 
     pcap_close(handle);

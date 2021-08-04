@@ -35,7 +35,7 @@ typedef struct Pair final {
 extern Attacker attacker;
 
 void usage();
-void get_myinfo(char* interface);
+void get_attacker_info(char* interface);
 Mac get_smac(pcap_t* handle, Pair& pair);
 Mac get_tmac(pcap_t* handle, Pair& pair);
 void infect(pcap_t* handle, Pair& pair);

