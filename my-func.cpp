@@ -177,7 +177,7 @@ void relay(pcap_t* handle, const u_char* packet, Pair& pair){
     eth_hdr->dmac_ = pair.tmac;
 
     PIpHdr ip_hdr = (PIpHdr)(packet + sizeof(EthHdr));
-    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthHdr)+ntohs(ip_hdr->tlen));
+    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthHdr)+ip_hdr->tlen());
     if (res != 0){
         fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
         exit(-1);
