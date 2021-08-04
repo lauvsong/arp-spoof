@@ -1,8 +1,8 @@
 #include "my-func.h"
 
 void usage() {
-    printf("syntax: send-arp-test <interface>\n");
-    printf("sample: send-arp-test wlan0\n");
+    printf("syntax : arp-spoof <interface> <sender ip 1> <target ip 1> [<sender ip 2> <target ip 2>...]\n");
+    printf("sample : arp-spoof wlan0 192.168.10.2 192.168.10.1 192.168.10.1 192.168.10.2\n");
 }
 
 void get_myinfo(char* interface){
