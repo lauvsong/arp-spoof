@@ -26,6 +26,7 @@ typedef struct Attacker final {
 } Attacker;
 
 typedef struct Pair final {
+    int key;    // index
     Mac smac;
     Ip sip;
     Mac tmac;
@@ -43,4 +44,4 @@ void relay(pcap_t* handle, u_char* packet, Pair& pair);
 bool is_spoofed_ip(const u_char* packet, Pair& pair);
 bool is_recover(const u_char* packet, Pair& pair);
 void arp_spoof(pcap_t* handle, Pair& pair);
-void task(pcap_t* handle, Pair& pair);
+void task(char* dev, Pair& pair);

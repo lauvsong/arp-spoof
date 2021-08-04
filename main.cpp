@@ -14,6 +14,7 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "couldn't open device %s(%s)\n", dev, errbuf);
         return -1;
     }
+    pcap_close(handle); // to thread tasks
 
     // get attacker info
     get_attacker_info(dev);
@@ -28,17 +29,17 @@ int main(int argc, char* argv[]) {
     // allocate thread per pair
     int idx = 0;
     for (int i=2;i<argc;i+=2){
+        pairs[idx].key = idx;
         pairs[idx].sip =Ip(argv[i]);
         pairs[idx].tip= Ip(argv[i+1]);
 
-        tasks[idx] = std::thread(task, handle, std::ref(pairs[idx]));
+        tasks[idx] = std::thread(task, dev, std::ref(pairs[idx]));
         ++idx;
     }
 
+    // thread tasks
     for (int i=0;i<idx;i++){
         tasks[i].join();
     }
-
-    pcap_close(handle);
     return 0;
 }
