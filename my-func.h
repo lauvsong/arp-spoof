@@ -37,6 +37,7 @@ extern Attacker attacker;
 void usage();
 void get_myinfo(char* interface);
 Mac get_smac(pcap_t* handle, Pair& pair);
+Mac get_tmac(pcap_t* handle, Pair& pair);
 void infect(pcap_t* handle, Pair& pair);
 void relay(pcap_t* handle, u_char* packet, Pair& pair);
 bool is_spoofed(const u_char* packet, Pair& pair);
