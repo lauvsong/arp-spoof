@@ -153,7 +153,7 @@ void infect(pcap_t* handle, Pair& pair){
     }
 }
 
-bool is_spoofed(const u_char* packet, Pair& pair){
+bool is_spoofed_ip(const u_char* packet, Pair& pair){
     PEthHdr eth_hdr = (PEthHdr)packet;
     if (eth_hdr->type() != EthHdr::Ip4) return false;
     if (eth_hdr->smac() != pair.smac) return false;
@@ -200,7 +200,7 @@ void arp_spoof(pcap_t* handle, Pair& pair){
         if (is_recover(packet, pair)){
             infect(handle, pair);
             printf("[DETECTED] recover :: reinfect\n");
-        } else if (is_spoofed(packet, pair)) {
+        } else if (is_spoofed_ip(packet, pair)) {
             relay(handle, packet, pair);
             printf("[DETECTED] spoofed IP :: relay\n");
         }
