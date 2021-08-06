@@ -25,7 +25,7 @@ typedef struct Attacker final {
     Ip ip;
 } Attacker;
 
-typedef struct Pair final {
+typedef struct Pair final { // flow fix
     int key;    // index
     Mac smac;
     Ip sip;

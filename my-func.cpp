@@ -157,16 +157,18 @@ bool is_spoofed_ip(const u_char* packet, Pair& pair){
     PEthHdr eth_hdr = (PEthHdr)packet;
     if (eth_hdr->type() != EthHdr::Ip4) return false;
     if (eth_hdr->smac() != pair.smac) return false;
+
+    PIpHdr ip_hdr = (PIpHdr)(packet + sizeof(EthHdr));
+    if (ip_hdr->dip_ != pair.tip) return false;
     return true;
 }
-
+// target recover
 bool is_recover(const u_char* packet, Pair& pair){
     PEthHdr eth_hdr = (PEthHdr)packet;
     if (eth_hdr->type() != EthHdr::Arp) return false;
+    if (eth_hdr->smac() != pair.smac) return false;
 
     PArpHdr arp_hdr = (PArpHdr)(packet + sizeof(EthHdr));
-
-    if (arp_hdr->smac() != pair.smac) return false;
     if (arp_hdr->tip() != pair.tip) return false;
     return true;
 }
@@ -177,7 +179,7 @@ void relay(pcap_t* handle, const u_char* packet, Pair& pair){
     eth_hdr->dmac_ = pair.tmac;
 
     PIpHdr ip_hdr = (PIpHdr)(packet + sizeof(EthHdr));
-    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthHdr)+ip_hdr->tlen());
+    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthHdr)+ip_hdr->tlen()); //naver size...
     if (res != 0){
         fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
         exit(-1);
@@ -211,7 +213,7 @@ void task(char* dev, Pair& pair){
     char errbuf[PCAP_ERRBUF_SIZE];
     pcap_t* handle = pcap_open_live(dev, BUFSIZ, 1, 1, errbuf);
 
-    pair.smac = get_smac(handle, pair);
+    pair.smac = get_smac(handle, pair); // merge & get->resolve
     pair.tmac = get_tmac(handle, pair);
 
     printf("[%d] Sender MAC: %s\n", pair.key, std::string(pair.smac).c_str());
