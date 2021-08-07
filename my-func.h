@@ -36,9 +36,8 @@ typedef struct Flow final {
 extern Attacker attacker;
 
 void usage();
-void get_attacker_info(char* interface);
-Mac get_smac(pcap_t* handle, Flow& flow);
-Mac get_tmac(pcap_t* handle, Flow& flow);
+void resolve_attacker_info(char* interface);
+Mac resolve_smac(pcap_t* handle, Ip& target);
 void infect(pcap_t* handle, Flow& flow);
 void relay(pcap_t* handle, u_char* packet, Flow& flow);
 bool is_spoofed_ip(const u_char* packet, Flow& flow);

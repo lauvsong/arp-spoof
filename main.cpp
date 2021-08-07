@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     pcap_close(handle); // to thread tasks
 
     // get attacker info
-    get_attacker_info(dev);
+    resolve_attacker_info(dev);
     printf("Attacker IP: %s\n", std::string(attacker.ip).c_str());
     printf("Attacker MAC: %s\n", std::string(attacker.mac).c_str());
 
