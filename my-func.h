@@ -25,23 +25,23 @@ typedef struct Attacker final {
     Ip ip;
 } Attacker;
 
-typedef struct Pair final { // flow fix
+typedef struct Flow final {
     int key;    // index
     Mac smac;
     Ip sip;
     Mac tmac;
     Ip tip;
-} Pair;
+} Flow;
 
 extern Attacker attacker;
 
 void usage();
 void get_attacker_info(char* interface);
-Mac get_smac(pcap_t* handle, Pair& pair);
-Mac get_tmac(pcap_t* handle, Pair& pair);
-void infect(pcap_t* handle, Pair& pair);
-void relay(pcap_t* handle, u_char* packet, Pair& pair);
-bool is_spoofed_ip(const u_char* packet, Pair& pair);
-bool is_recover(const u_char* packet, Pair& pair);
-void arp_spoof(pcap_t* handle, Pair& pair);
-void task(char* dev, Pair& pair);
+Mac get_smac(pcap_t* handle, Flow& flow);
+Mac get_tmac(pcap_t* handle, Flow& flow);
+void infect(pcap_t* handle, Flow& flow);
+void relay(pcap_t* handle, u_char* packet, Flow& flow);
+bool is_spoofed_ip(const u_char* packet, Flow& flow);
+bool is_recover(const u_char* packet, Flow& flow);
+void arp_spoof(pcap_t* handle, Flow& flow);
+void task(char* dev, Flow& pair);

@@ -22,18 +22,18 @@ int main(int argc, char* argv[]) {
     printf("Attacker MAC: %s\n", std::string(attacker.mac).c_str());
 
     // threads
-    int pair_cnt = (argc-2)/2;
-    Pair pairs[pair_cnt];
-    std::thread tasks[pair_cnt];
+    int flow_cnt = (argc-2)/2;
+    Flow flows[flow_cnt];
+    std::thread tasks[flow_cnt];
 
     // allocate thread per pair
     int idx = 0;
     for (int i=2;i<argc;i+=2){
-        pairs[idx].key = idx;
-        pairs[idx].sip =Ip(argv[i]);
-        pairs[idx].tip= Ip(argv[i+1]);
+        flows[idx].key = idx;
+        flows[idx].sip =Ip(argv[i]);
+        flows[idx].tip= Ip(argv[i+1]);
 
-        tasks[idx] = std::thread(task, dev, std::ref(pairs[idx]));
+        tasks[idx] = std::thread(task, dev, std::ref(flows[idx]));
         ++idx;
     }
 
