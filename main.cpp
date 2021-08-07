@@ -27,18 +27,18 @@ int main(int argc, char* argv[]) {
     std::thread tasks[flow_cnt];
 
     // allocate thread per pair
-    int idx = 0;
+    int key = 0;
     for (int i=2;i<argc;i+=2){
-        flows[idx].key = idx;
-        flows[idx].sip =Ip(argv[i]);
-        flows[idx].tip= Ip(argv[i+1]);
+        flows[key].key = key;
+        flows[key].sip =Ip(argv[i]);
+        flows[key].tip= Ip(argv[i+1]);
 
-        tasks[idx] = std::thread(task, dev, std::ref(flows[idx]));
-        ++idx;
+        tasks[key] = std::thread(task, dev, std::ref(flows[key]));
+        ++key;
     }
 
     // thread tasks
-    for (int i=0;i<idx;i++){
+    for (int i=0;i<key;i++){
         tasks[i].join();
     }
     return 0;
